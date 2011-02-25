@@ -1,0 +1,5 @@
+KOlena is a KDE-based library that provides an asyncroneous
+job class to extract text from images via the Olena library.
+
+The necessary sources of the Olena project are packages in 
+the kolena source tree for simplicity.
