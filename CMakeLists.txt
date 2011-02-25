@@ -1,14 +1,27 @@
 project(kolena)
 
-##################  Kolena version  ################################
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${nepomuk_kde_SOURCE_DIR}/cmake)
+
+# set the version to be used by KolenaConfig.cmake and the lib version
+# ===============================================================================================
 set(CMAKE_KOLENA_VERSION_MAJOR 0)
 set(CMAKE_KOLENA_VERSION_MINOR 1)
 set(CMAKE_KOLENA_VERSION_RELEASE 0)
-set(CMAKE_KOLENA_VERSION_STRING "${CMAKE_KOLENA_VERSION_MAJOR}.${CMAKE_KOLENA_VERSION_MINOR}.${CMAKE_KOLENA_VERSION_RELEASE}")
+set(CMAKE_KOLENA_VERSION "${CMAKE_KOLENA_VERSION_MAJOR}.${CMAKE_KOLENA_VERSION_MINOR}.${CMAKE_KOLENA_VERSION_RELEASE}")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${nepomuk_kde_SOURCE_DIR}/cmake)
 
-# search packages used by KDE
+# generate KolenaConfig.cmake for easy utilisation of the package by other cmake build systems
+# ===============================================================================================
+configure_file(KolenaConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfig.cmake @ONLY)
+configure_file(KolenaConfigVersion.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfigVersion.cmake @ONLY)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/Kolena)
+
+
+# search required packages
+# ===============================================================================================
 set(KDE_MIN_VERSION "4.5.00")
 find_package(KDE4 4.5.00 REQUIRED)
 include(KDE4Defaults)
@@ -28,6 +41,8 @@ macro_log_feature( TIFF_FOUND "Tiff"
   TRUE "" "")
 
 
+# build the lib itself
+# ===============================================================================================
 include_directories(
   ${QT_INCLUDES}
   ${KDE4_INCLUDES}
@@ -50,7 +65,7 @@ target_link_libraries(
   ${TESSERACT_LIBRARY}
 )
 
-set_target_properties(kolena PROPERTIES VERSION "${CMAKE_KOLENA_VERSION_STRING}" SOVERSION ${CMAKE_KOLENA_VERSION_MAJOR})
+set_target_properties(kolena PROPERTIES VERSION "${CMAKE_KOLENA_VERSION}" SOVERSION ${CMAKE_KOLENA_VERSION_MAJOR})
 
 install(TARGETS kolena DESTINATION ${LIB_INSTALL_DIR})
 install(FILES
