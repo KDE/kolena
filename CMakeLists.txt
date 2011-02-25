@@ -10,16 +10,6 @@ set(CMAKE_KOLENA_VERSION_RELEASE 0)
 set(CMAKE_KOLENA_VERSION "${CMAKE_KOLENA_VERSION_MAJOR}.${CMAKE_KOLENA_VERSION_MINOR}.${CMAKE_KOLENA_VERSION_RELEASE}")
 
 
-# generate KolenaConfig.cmake for easy utilisation of the package by other cmake build systems
-# ===============================================================================================
-configure_file(KolenaConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfig.cmake @ONLY)
-configure_file(KolenaConfigVersion.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfigVersion.cmake @ONLY)
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfig.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfigVersion.cmake
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/Kolena)
-
-
 # search required packages
 # ===============================================================================================
 set(KDE_MIN_VERSION "4.5.00")
@@ -39,6 +29,16 @@ macro_log_feature( TIFF_FOUND "Tiff"
   "Library for manipulation of TIFF (Tag Image File Format) images - Required by the Olena annotation plugin."
   "http://www.remotesensing.org/libtiff/"
   TRUE "" "")
+
+
+# generate KolenaConfig.cmake for easy utilisation of the package by other cmake build systems
+# ===============================================================================================
+configure_file(KolenaConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfig.cmake @ONLY)
+configure_file(KolenaConfigVersion.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfigVersion.cmake @ONLY)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/KolenaConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/Kolena)
 
 
 # build the lib itself
