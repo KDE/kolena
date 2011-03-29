@@ -1,6 +1,6 @@
 project(kolena)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${nepomuk_kde_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${kolena_SOURCE_DIR}/cmake/modules)
 
 # set the version to be used by KolenaConfig.cmake and the lib version
 # ===============================================================================================
