@@ -1,4 +1,5 @@
-// Copyright (C) 2009 EPITA Research and Development Laboratory (LRDE)
+// Copyright (C) 2009, 2010 EPITA Research and Development Laboratory
+// (LRDE)
 //
 // This file is part of Olena.
 //
@@ -29,9 +30,6 @@
 # define for_all_ncomponents(C, NCOMP) \
   for (unsigned C = 1; C <= NCOMP; ++C)
 
-// # define for_all_components(C, S)
-//   for (unsigned C = 1; C <= S.nelements(); ++C)
-
 # define for_all_elements(E, S) \
   for (unsigned E = 0; E < S.nelements(); ++E)
 
@@ -52,6 +50,9 @@
 # define for_all_lines(E, S) \
   for_all_comps(E, S)
 
+# define for_all_paragraphs(E, S) \
+  for_all_comps(E, S)
+
 # define for_all_line_comps(E, S) \
   for_all_elements(E, S)
 
@@ -59,6 +60,9 @@
   for_all_comp_data(E, S)
 
 # define for_all_anchors(E, S) \
+  for_all_elements(E, S)
+
+# define for_all_paragraph_lines(E, S) \
   for_all_elements(E, S)
 
 #endif // ! SCRIBO_CORE_MACROS_HH

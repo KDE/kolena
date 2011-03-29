@@ -35,8 +35,6 @@
 /// <em>before</em> using any of these functions, as advised by the
 /// GraphicsMagick documentation
 /// (http://www.graphicsmagick.org/Magick++/Image.html).
-///
-/// \fixme: re-enable quantum size check
 
 # include <cstdlib>
 
@@ -95,17 +93,33 @@ namespace mln
 	inline
 	Magick::Color get_color(const value::int_u8& value)
 	{
-	  // Ensure a Magick++'s Quantum is an 8-bit value.
-	  //mln::metal::equal<Magick::Quantum, unsigned char>::check();
-	  return Magick::Color(value, value, value);
+	  /* Each channel of a Magick++ image is coded on a
+	     Magick::Quantum value, which can be an 8-, 16- or 32-bit
+	     integer.  Store the data from each mln::value::int_u8
+	     values into the most significant bits of Magick::Color's
+	     channels.  */
+	  return Magick::Color
+	    (value << 8 * (sizeof(Magick::Quantum) - sizeof(value::int_u8)),
+	     value << 8 * (sizeof(Magick::Quantum) - sizeof(value::int_u8)),
+	     value << 8 * (sizeof(Magick::Quantum) - sizeof(value::int_u8)));
 	}
 
 	inline
 	Magick::Color get_color(const value::rgb8& value)
 	{
-	  // Ensure a Magick++'s Quantum is an 8-bit value.
-	  //mln::metal::equal<Magick::Quantum, unsigned char>::check();
-	  return Magick::Color(value.red(), value.green(), value.blue());
+	  /* Each channel of a Magick++ image is coded on a
+	     Magick::Quantum value, which can be an 8-, 16- or 32-bit
+	     integer.  Store the data from each component of
+	     mln::value::rgb8 values (of type mln::value::int_u8) into
+	     the most significant bits of Magick::Color's
+	     channels.  */
+	  return Magick::Color
+	    (value.red()   << 8 * (sizeof(Magick::Quantum)
+				   - sizeof(value::rgb8::red_t)),
+	     value.green() << 8 * (sizeof(Magick::Quantum)
+				   - sizeof(value::rgb8::green_t)),
+	     value.blue()  << 8 * (sizeof(Magick::Quantum)
+				   - sizeof(value::rgb8::blue_t)));
 	}
 
       } // end of namespace mln::io::magick::impl
@@ -136,18 +150,41 @@ namespace mln
 
 	const I& ima = exact(ima_);
 
-	Magick::Image magick_ima;
+	def::coord
+	  minrow = geom::min_row(ima),
+	  mincol = geom::min_col(ima),
+	  maxrow = geom::max_row(ima),
+	  maxcol = geom::max_col(ima),
+	  ncols  = geom::ncols(ima),
+	  nrows  = geom::nrows(ima);
+
 	// In the construction of a Geometry object, the width (i.e.
 	// `ncols') comes first, then the height (i.e. `nrows')
 	// follows.
-	magick_ima.size(Magick::Geometry(ima.ncols(), ima.nrows()));
+	//
+	// FIXME: Default pixel value is set to "white". If the image is
+	// declared with the default constructor, without specifying a
+	// default value, no data seems to be allocated and the Pixel view
+	// declared further fails and segfault...
+	Magick::Image magick_ima(Magick::Geometry(ncols, nrows), "white");
+
+	magick_ima.type(Magick::TrueColorType);
+
+        // Ensure that there is only one reference to underlying image
+        // If this is not done, then image pixels will not be modified.
+	magick_ima.modifyImage();
 
 	Magick::Pixels view(magick_ima);
 	// As above, `ncols' is passed before `nrows'.
-	Magick::PixelPacket* pixels = view.get(0, 0, ima.ncols(), ima.nrows());
-	mln_piter(I) p(ima.domain());
-	for_all(p)
-	  *pixels++ = impl::get_color(ima(p));
+	Magick::PixelPacket* pixels = view.get(0, 0, ncols, nrows);
+	const mln_value(I) *ptr_ima = &ima(ima.domain().pmin());
+
+	unsigned row_offset = ima.delta_index(dpoint2d(+1, - ncols));
+
+	for (def::coord row = minrow; row <= maxrow;
+	     ++row, ptr_ima += row_offset)
+	  for (def::coord col = mincol; col <= maxcol; ++col)
+	    *pixels++ = impl::get_color(*ptr_ima++);
 
 	view.sync();
 	magick_ima.write(filename);

@@ -1,5 +1,5 @@
-// Copyright (C) 2009, 2010 EPITA Research and Development Laboratory
-// (LRDE)
+// Copyright (C) 2009, 2010, 2011 EPITA Research and Development
+// Laboratory (LRDE)
 //
 // This file is part of Olena.
 //
@@ -99,8 +99,6 @@ namespace scribo
 
 # ifndef MLN_INCLUDE_ONLY
 
-    unsigned debug_id = 0;
-
 
     template <typename L>
     void
@@ -120,15 +118,10 @@ namespace scribo
 	abort();
       }
       tess.SetPageSegMode(tesseract::PSM_SINGLE_LINE);
+
 #  endif // HAVE_TESSERACT_2
 
       typedef mln_ch_value(L,bool) I;
-      int vals[] = { 0, 9, 0, 9, 0,
-		     9, 6, 4, 6, 9,
-		     0, 4, 0, 4, 0,
-		     9, 6, 4, 6, 9,
-		     0, 9, 0, 9, 0 };
-      w_window2d_int dmap_win = mln::make::w_window2d_int(vals);
 
 
       /// Use text bboxes with Tesseract
@@ -150,6 +143,7 @@ namespace scribo
 	const component_set<L>& comp_set = lines.components();
 	const L& lbl = comp_set.labeled_image();
 
+	// Extract each character components to create the line image.
 	const mln::util::array<component_id_t>& comps = lines(i).components();
 	for_all_elements(e, lines(i).components())
 	{
@@ -159,12 +153,16 @@ namespace scribo
 	}
 
 	/// Improve text quality.
-
-	/// text_ima_cleaned domain may be larger than text_ima's.
 	text::clean_inplace(lines(i), text_ima);
 
 	// Make sure characters are isolated from the borders.
 	// Help Tesseract.
+	//
+	// FIXME: can be improved! We need a morpher for a constant
+	// extension set to false (avoid data::fill), a morpher for
+	// translating the domain to (0,0) (avoid the creation of a
+	// new image), change the default border::thickness to 0 and a
+	// morpher to enlarge the domain to a part of the extension.
 	mln_domain(I) lbox = text_ima.domain();
 	lbox.enlarge(lines(i).char_space() + 2);
 	I line_image(lbox, 0); // Make sure there is no border!
@@ -182,14 +180,13 @@ namespace scribo
 	    line_image.ncols(),		         // n cols
 	    line_image.nrows());		 // n rows
 #  else // HAVE_TESSERACT_3
-	char* s = tess.TesseractRect(
+	tess.SetImage(
 	  (unsigned char*) line_image.buffer(),
-	  sizeof (bool),			 // Pixel size.
-	  line_image.ncols() * sizeof (bool),    // Row_offset
-	  0,					 // Left
-	  0,					 // Top
 	  line_image.ncols(),		         // n cols
-	  line_image.nrows());		         // n rows
+	  line_image.nrows(),		         // n rows
+	  sizeof (bool),			 // Pixel size.
+	  line_image.ncols() * sizeof (bool));    // Row_offset
+	char* s = tess.GetUTF8Text();
 #  endif // ! HAVE_TESSERACT_2
 
 	if (s != 0)
@@ -200,7 +197,7 @@ namespace scribo
 	}
 
 	// The string has been allocated by Tesseract. It must be released.
-	free(s);
+	delete [] s;
       }
 
       trace::exiting("scribo::text::recognition");
@@ -286,7 +283,7 @@ namespace scribo
 	}
 
 	// The string has been allocated by Tesseract. We must free it.
-	free(s);
+	delete [] s;
 
 	if (!output_file.empty())
 	  file.close();

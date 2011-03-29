@@ -1,4 +1,5 @@
-// Copyright (C) 2008, 2009 EPITA Research and Development Laboratory (LRDE)
+// Copyright (C) 2008, 2009, 2010 EPITA Research and Development
+// Laboratory (LRDE)
 //
 // This file is part of Olena.
 //
@@ -44,6 +45,7 @@
 # include <mln/metal/is.hh>
 # include <mln/metal/is_a.hh>
 
+# include <mln/value/cast.hh>
 
 namespace mln
 {
@@ -222,12 +224,24 @@ namespace mln
 	exact(to) = exact(from);
       }
 
+
+      // Exact same type.
       template <typename T>
       inline
       void
       from_to_(const T& from, T& to)
       {
 	to = from;
+      }
+
+
+      // Default conversion.
+      template <typename F, typename T>
+      inline
+      void
+      from_to_(const F& from, T& to)
+      {
+	to = mln::value::cast<T>(from);
       }
 
 

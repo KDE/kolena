@@ -57,12 +57,14 @@ namespace scribo
       Character,
       Separator,
       Noise,
-      Punctuation
+      Punctuation,
+      Image
     };
 
 # ifndef MLN_INCLUDE_ONLY
 
 
+    inline
     std::ostream&
     operator<<(std::ostream& ostr, const Tag& tag)
     {
@@ -82,6 +84,7 @@ namespace scribo
     }
 
 
+    inline
     std::ostream&
     operator<<(std::ostream& ostr, const Type& type)
     {
@@ -103,6 +106,9 @@ namespace scribo
 	  break;
 	case Punctuation:
 	  str = "Punctuation";
+	  break;
+	case Image:
+	  str = "Image";
 	  break;
       }
 
